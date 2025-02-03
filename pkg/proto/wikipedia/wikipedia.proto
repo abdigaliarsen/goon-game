@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package auth;
+
+option go_package = "goon-game/pkg/proto/wikipedia";
+
+service WikipediaService {
+  rpc ReadStream(ReadStreamRequest) returns(ReadStreamResponse);
+}
+
+message ReadStreamRequest {}
+
+message ReadStreamResponse {}
