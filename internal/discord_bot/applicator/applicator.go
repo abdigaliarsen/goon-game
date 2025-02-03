@@ -1,9 +1,19 @@
 package applicator
 
 import (
+	"context"
+	"errors"
 	"go.uber.org/fx"
 	"goon-game/internal/discord_bot/config"
+	"goon-game/internal/discord_bot/handlers"
+	"goon-game/internal/discord_bot/services"
+	"goon-game/internal/discord_bot/transport/wikipedia"
 	"goon-game/pkg/utils"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 type Applicator struct {
@@ -26,7 +36,34 @@ func New(in ApplicatorIn) *Applicator {
 
 func (a *Applicator) Run() {
 	app := fx.New(
-		fx.Provide(),
+		fx.Provide(
+			func() utils.Logger { return a.logger },
+			func() *config.Config { return a.cfg },
+			wikipedia.NewGRPCTransport,
+			services.New,
+			handlers.New,
+		),
+		fx.Invoke(
+			func(server *handlers.Server) {
+				shutdown := make(chan os.Signal, 1)
+				signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
+				go func() {
+					<-shutdown
+					a.logger.Info("Stop server")
+					ctx, cancel := context.WithTimeout(context.Background(), a.cfg.ServerConfig.ShutdownTimeout)
+					defer cancel()
+					if err := server.Shutdown(ctx); err != nil {
+						a.logger.Infof("Failure stop server: %v", err)
+					}
+				}()
+
+				a.logger.Infof("Start server on port: %s", a.cfg.ServerConfig.Port)
+				if err := server.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+					log.Fatalf("Failure start server: %v", err)
+				}
+			},
+		),
 	)
+
 	app.Run()
 }

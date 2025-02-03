@@ -4,11 +4,18 @@ import (
 	"github.com/lpernett/godotenv"
 	"goon-game/pkg/utils"
 	"os"
+	"time"
 )
 
 type Config struct {
 	LogConfig       LogConfig
 	WikipediaConfig WikipediaConfig
+	ServerConfig    ServerConfig
+}
+
+type ServerConfig struct {
+	Port            string        `env:"PORT"`
+	ShutdownTimeout time.Duration `env:"SHUTDOWN_TIMEOUT"`
 }
 
 type WikipediaConfig struct {
