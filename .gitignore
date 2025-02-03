@@ -1,0 +1,4 @@
+config/wikipedia/.env
+config/discord_bot/.env
+
+.idea
