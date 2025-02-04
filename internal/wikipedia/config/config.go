@@ -11,6 +11,18 @@ type Config struct {
 	LogConfig       LogConfig
 	WikipediaConfig WikipediaConfig
 	ServerConfig    ServerConfig
+	KafkaConfig     KafkaConfig
+	RedisConfig     RedisConfig
+}
+
+type RedisConfig struct {
+	Addr     string `env:"REDIS_ADDR"`
+	Password string `env:"REDIS_PASSWORD"`
+	DB       int    `env:"REDIS_DB"`
+}
+
+type KafkaConfig struct {
+	KafkaHost string `env:"KAFKA_HOST"`
 }
 
 type ServerConfig struct {
@@ -32,8 +44,20 @@ func LoadConfig() (*Config, error) {
 	}
 
 	cfg := &Config{
+		RedisConfig: RedisConfig{
+			Addr:     utils.MustGetEnv[string]("REDIS_ADDR"),
+			Password: utils.MustGetEnv[string]("REDIS_PASSWORD"),
+			DB:       utils.MustGetEnv[int]("REDIS_DB"),
+		},
+		KafkaConfig: KafkaConfig{
+			KafkaHost: utils.MustGetEnv[string]("KAFKA_HOST"),
+		},
+		ServerConfig: ServerConfig{
+			Port:            utils.MustGetEnv[string]("PORT"),
+			ShutdownTimeout: utils.MustGetEnv[time.Duration]("SHUTDOWN_TIMEOUT"),
+		},
 		WikipediaConfig: WikipediaConfig{
-			StreamDataUrl: os.Getenv("STREAM_DATA_URL"),
+			StreamDataUrl: utils.MustGetEnv[string]("STREAM_DATA_URL"),
 		},
 		LogConfig: LogConfig{
 			ENV: utils.MustGetEnv[string]("ENV"),

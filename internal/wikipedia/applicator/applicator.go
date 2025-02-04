@@ -6,6 +6,8 @@ import (
 	"go.uber.org/fx"
 	"goon-game/internal/wikipedia/config"
 	"goon-game/internal/wikipedia/handlers"
+	"goon-game/internal/wikipedia/infrastructure/cache"
+	"goon-game/internal/wikipedia/infrastructure/message_brokers"
 	"goon-game/internal/wikipedia/services"
 	"goon-game/pkg/utils"
 	"log"
@@ -38,6 +40,8 @@ func (a *Applicator) Run() {
 		fx.Provide(
 			func() utils.Logger { return a.logger },
 			func() *config.Config { return a.cfg },
+			cache.New,
+			message_brokers.New,
 			services.New,
 			handlers.New,
 		),

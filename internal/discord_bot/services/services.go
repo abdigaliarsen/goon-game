@@ -1,9 +1,12 @@
 package services
 
 import (
+	"github.com/bwmarrin/discordgo"
 	"go.uber.org/fx"
 	"goon-game/internal/discord_bot"
 	"goon-game/internal/discord_bot/config"
+	"goon-game/internal/discord_bot/infrastructure/cache"
+	"goon-game/internal/discord_bot/infrastructure/message_brokers"
 	"goon-game/internal/discord_bot/transport/wikipedia"
 	"goon-game/pkg/utils"
 )
@@ -12,6 +15,11 @@ type discordService struct {
 	cfg             *config.Config
 	logger          utils.Logger
 	wikipediaClient *wikipedia.GRPCTransport
+	discord         *discordgo.Session
+	kafka           message_brokers.MessageBrokers
+	cache           cache.Cache
+
+	running bool
 }
 
 type DiscordServiceIn struct {
@@ -21,9 +29,16 @@ type DiscordServiceIn struct {
 	WikipediaClient *wikipedia.GRPCTransport
 }
 
-func New(in DiscordServiceIn) discord_bot.DiscordService {
-	return &discordService{
-		cfg:    in.Cfg,
-		logger: in.Logger,
+func New(in DiscordServiceIn) (discord_bot.DiscordService, error) {
+	discord, err := discordgo.New("Bot " + in.Cfg.DiscordApiConfig.DiscordApiToken)
+	if err != nil {
+		return nil, err
 	}
+
+	return &discordService{
+		cfg:             in.Cfg,
+		logger:          in.Logger,
+		wikipediaClient: in.WikipediaClient,
+		discord:         discord,
+	}, nil
 }

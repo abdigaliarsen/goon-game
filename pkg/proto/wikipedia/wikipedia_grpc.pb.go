@@ -19,14 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	WikipediaService_ReadStream_FullMethodName = "/auth.WikipediaService/ReadStream"
+	WikipediaService_SetLanguage_FullMethodName        = "/auth.WikipediaService/SetLanguage"
+	WikipediaService_GetLanguageUpdates_FullMethodName = "/auth.WikipediaService/GetLanguageUpdates"
 )
 
 // WikipediaServiceClient is the client API for WikipediaService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type WikipediaServiceClient interface {
-	ReadStream(ctx context.Context, in *ReadStreamRequest, opts ...grpc.CallOption) (*ReadStreamResponse, error)
+	SetLanguage(ctx context.Context, in *SetLanguageRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
+	GetLanguageUpdates(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*GetLanguageUpdatesResponse, error)
 }
 
 type wikipediaServiceClient struct {
@@ -37,10 +39,20 @@ func NewWikipediaServiceClient(cc grpc.ClientConnInterface) WikipediaServiceClie
 	return &wikipediaServiceClient{cc}
 }
 
-func (c *wikipediaServiceClient) ReadStream(ctx context.Context, in *ReadStreamRequest, opts ...grpc.CallOption) (*ReadStreamResponse, error) {
+func (c *wikipediaServiceClient) SetLanguage(ctx context.Context, in *SetLanguageRequest, opts ...grpc.CallOption) (*EmptyResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ReadStreamResponse)
-	err := c.cc.Invoke(ctx, WikipediaService_ReadStream_FullMethodName, in, out, cOpts...)
+	out := new(EmptyResponse)
+	err := c.cc.Invoke(ctx, WikipediaService_SetLanguage_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *wikipediaServiceClient) GetLanguageUpdates(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*GetLanguageUpdatesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetLanguageUpdatesResponse)
+	err := c.cc.Invoke(ctx, WikipediaService_GetLanguageUpdates_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +63,8 @@ func (c *wikipediaServiceClient) ReadStream(ctx context.Context, in *ReadStreamR
 // All implementations must embed UnimplementedWikipediaServiceServer
 // for forward compatibility.
 type WikipediaServiceServer interface {
-	ReadStream(context.Context, *ReadStreamRequest) (*ReadStreamResponse, error)
+	SetLanguage(context.Context, *SetLanguageRequest) (*EmptyResponse, error)
+	GetLanguageUpdates(context.Context, *EmptyRequest) (*GetLanguageUpdatesResponse, error)
 	mustEmbedUnimplementedWikipediaServiceServer()
 }
 
@@ -62,8 +75,11 @@ type WikipediaServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedWikipediaServiceServer struct{}
 
-func (UnimplementedWikipediaServiceServer) ReadStream(context.Context, *ReadStreamRequest) (*ReadStreamResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ReadStream not implemented")
+func (UnimplementedWikipediaServiceServer) SetLanguage(context.Context, *SetLanguageRequest) (*EmptyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetLanguage not implemented")
+}
+func (UnimplementedWikipediaServiceServer) GetLanguageUpdates(context.Context, *EmptyRequest) (*GetLanguageUpdatesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLanguageUpdates not implemented")
 }
 func (UnimplementedWikipediaServiceServer) mustEmbedUnimplementedWikipediaServiceServer() {}
 func (UnimplementedWikipediaServiceServer) testEmbeddedByValue()                          {}
@@ -86,20 +102,38 @@ func RegisterWikipediaServiceServer(s grpc.ServiceRegistrar, srv WikipediaServic
 	s.RegisterService(&WikipediaService_ServiceDesc, srv)
 }
 
-func _WikipediaService_ReadStream_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ReadStreamRequest)
+func _WikipediaService_SetLanguage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetLanguageRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(WikipediaServiceServer).ReadStream(ctx, in)
+		return srv.(WikipediaServiceServer).SetLanguage(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: WikipediaService_ReadStream_FullMethodName,
+		FullMethod: WikipediaService_SetLanguage_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WikipediaServiceServer).ReadStream(ctx, req.(*ReadStreamRequest))
+		return srv.(WikipediaServiceServer).SetLanguage(ctx, req.(*SetLanguageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WikipediaService_GetLanguageUpdates_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EmptyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WikipediaServiceServer).GetLanguageUpdates(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WikipediaService_GetLanguageUpdates_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WikipediaServiceServer).GetLanguageUpdates(ctx, req.(*EmptyRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -112,8 +146,12 @@ var WikipediaService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*WikipediaServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "ReadStream",
-			Handler:    _WikipediaService_ReadStream_Handler,
+			MethodName: "SetLanguage",
+			Handler:    _WikipediaService_SetLanguage_Handler,
+		},
+		{
+			MethodName: "GetLanguageUpdates",
+			Handler:    _WikipediaService_GetLanguageUpdates_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

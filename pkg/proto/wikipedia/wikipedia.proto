@@ -4,10 +4,26 @@ package auth;
 
 option go_package = "github.com/abdigaliarsen/goon-game/pkg/proto/wikipedia";
 
+import "google/protobuf/timestamp.proto";
+
 service WikipediaService {
-  rpc ReadStream(ReadStreamRequest) returns(ReadStreamResponse);
+  rpc SetLanguage(SetLanguageRequest) returns(EmptyResponse);
+  rpc GetLanguageUpdates(EmptyRequest) returns(GetLanguageUpdatesResponse);
 }
 
-message ReadStreamRequest {}
+message EmptyRequest {}
 
-message ReadStreamResponse {}
+message EmptyResponse {}
+
+message SetLanguageRequest {
+  string language = 1;
+}
+
+message GetLanguageUpdatesResponse {
+  repeated Data updates = 1;
+
+  message Data {
+    google.protobuf.Timestamp updated_at = 1;
+    string language = 2;
+  }
+}

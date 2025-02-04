@@ -11,6 +11,19 @@ type Config struct {
 	LogConfig        LogConfig
 	DiscordApiConfig DiscordApiConfig
 	ServerConfig     ServerConfig
+	KafkaConfig      KafkaConfig
+	RedisConfig      RedisConfig
+}
+
+type RedisConfig struct {
+	Addr     string `env:"REDIS_ADDR"`
+	Password string `env:"REDIS_PASSWORD"`
+	DB       int    `env:"REDIS_DB"`
+}
+
+type KafkaConfig struct {
+	KafkaHost             string `env:"KAFKA_HOST"`
+	KafkaWikipediaGroupID string `env:"KAFKA_WIKIPEDIA_GROUP_ID"`
 }
 
 type ServerConfig struct {
@@ -20,7 +33,9 @@ type ServerConfig struct {
 }
 
 type DiscordApiConfig struct {
-	DiscordApiToken string `env:"DISCORD_API_TOKEN"`
+	DiscordApiToken      string `env:"DISCORD_API_TOKEN"`
+	DiscordApplicationId string `env:"DISCORD_APPLICATION_ID"`
+	DiscordPublicKey     string `env:"DISCORD_PUBLIC_KEY"`
 }
 
 type LogConfig struct {
@@ -33,6 +48,10 @@ func LoadConfig() (*Config, error) {
 	}
 
 	cfg := &Config{
+		KafkaConfig: KafkaConfig{
+			KafkaHost:             utils.MustGetEnv[string]("KAFKA_HOST"),
+			KafkaWikipediaGroupID: utils.MustGetEnv[string]("KAFKA_WIKIPEDIA_GROUP_ID"),
+		},
 		ServerConfig: ServerConfig{
 			WikipediaTransportHost: utils.MustGetEnv[string]("WIKIPEDIA_TRANSPORT_HOST"),
 			Port:                   utils.MustGetEnv[string]("PORT"),

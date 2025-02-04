@@ -1,0 +1,42 @@
+package services
+
+import (
+	"errors"
+	"goon-game/internal/wikipedia/dto"
+	"goon-game/internal/wikipedia/utils"
+	"time"
+)
+
+func (w *wikipediaService) SetLanguage(language string) error {
+	if err := w.redis.AddS(utils.LanguageUpdatesKey, language); err != nil {
+		return err
+	}
+
+	w.language = language
+	return w.redis.SetS(utils.LanguageKey, language)
+}
+
+func (w *wikipediaService) GetLanguage() (string, error) {
+	return w.redis.GetS(utils.LanguageKey)
+}
+
+func (w *wikipediaService) GetLanguageUpdates() ([]*dto.LanguageUpdate, error) {
+	languages, updatedAt, err := w.redis.GetList(utils.LanguageUpdatesKey)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(languages) != len(updatedAt) {
+		return nil, errors.New("language updates not found")
+	}
+
+	languageUpdates := make([]*dto.LanguageUpdate, 0, len(languages))
+	for i := range languages {
+		languageUpdates = append(languageUpdates, &dto.LanguageUpdate{
+			Language:  languages[i],
+			UpdatedAt: time.Unix(updatedAt[i], 0),
+		})
+	}
+
+	return languageUpdates, nil
+}
