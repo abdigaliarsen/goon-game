@@ -7,6 +7,13 @@ import (
 
 func (s *discordService) Start() error {
 	s.running = true
+
+	for _, chatId := range s.cfg.DiscordApiConfig.DiscordDefaultChatIds {
+		if err := s.cache.Add(utils.DiscordChannelIdsKey, chatId); err != nil {
+			return err
+		}
+	}
+
 	return s.discord.Open()
 }
 

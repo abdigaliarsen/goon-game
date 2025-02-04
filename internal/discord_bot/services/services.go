@@ -27,6 +27,8 @@ type DiscordServiceIn struct {
 	Cfg             *config.Config
 	Logger          utils.Logger
 	WikipediaClient *wikipedia.GRPCTransport
+	Kafka           message_brokers.MessageBrokers
+	Cache           cache.Cache
 }
 
 func New(in DiscordServiceIn) (discord_bot.DiscordService, error) {
@@ -40,5 +42,8 @@ func New(in DiscordServiceIn) (discord_bot.DiscordService, error) {
 		logger:          in.Logger,
 		wikipediaClient: in.WikipediaClient,
 		discord:         discord,
+		kafka:           in.Kafka,
+		cache:           in.Cache,
+		running:         true,
 	}, nil
 }

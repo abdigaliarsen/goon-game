@@ -4,6 +4,7 @@ import (
 	"github.com/lpernett/godotenv"
 	"goon-game/pkg/utils"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -33,9 +34,10 @@ type ServerConfig struct {
 }
 
 type DiscordApiConfig struct {
-	DiscordApiToken      string `env:"DISCORD_API_TOKEN"`
-	DiscordApplicationId string `env:"DISCORD_APPLICATION_ID"`
-	DiscordPublicKey     string `env:"DISCORD_PUBLIC_KEY"`
+	DiscordApiToken       string   `env:"DISCORD_API_TOKEN"`
+	DiscordApplicationId  string   `env:"DISCORD_APPLICATION_ID"`
+	DiscordPublicKey      string   `env:"DISCORD_PUBLIC_KEY"`
+	DiscordDefaultChatIds []string `env:"DISCORD_DEFAULT_CHAT_IDS"`
 }
 
 type LogConfig struct {
@@ -46,6 +48,8 @@ func LoadConfig() (*Config, error) {
 	if err := godotenv.Load(); err != nil && !os.IsNotExist(err) {
 		return nil, err
 	}
+
+	discordChatIds := utils.MustGetEnv[string]("DISCORD_DEFAULT_CHAT_IDS")
 
 	cfg := &Config{
 		KafkaConfig: KafkaConfig{
@@ -58,7 +62,10 @@ func LoadConfig() (*Config, error) {
 			ShutdownTimeout:        utils.MustGetEnv[time.Duration]("SHUTDOWN_TIMEOUT"),
 		},
 		DiscordApiConfig: DiscordApiConfig{
-			DiscordApiToken: utils.MustGetEnv[string]("DISCORD_API_TOKEN"),
+			DiscordApiToken:       utils.MustGetEnv[string]("DISCORD_API_TOKEN"),
+			DiscordApplicationId:  utils.MustGetEnv[string]("DISCORD_APPLICATION_ID"),
+			DiscordPublicKey:      utils.MustGetEnv[string]("DISCORD_PUBLIC_KEY"),
+			DiscordDefaultChatIds: strings.Split(discordChatIds, ","),
 		},
 		LogConfig: LogConfig{
 			ENV: utils.MustGetEnv[string]("ENV"),
