@@ -18,24 +18,27 @@ type ServerIn struct {
 	fx.In
 	Cfg      *config.Config
 	Logger   utils.Logger
-	services discord_bot.DiscordService
+	Services discord_bot.DiscordService
 }
 
 func New(in ServerIn) *Server {
 	return &Server{
-		cfg:    in.Cfg,
-		logger: in.Logger,
+		cfg:      in.Cfg,
+		logger:   in.Logger,
+		services: in.Services,
 	}
 }
 
-func (s *Server) Start() error {
+func (s *Server) Start(ctx context.Context) error {
 	s.services.InitHandlers()
 
 	if err := s.services.Start(); err != nil {
 		return err
 	}
 
-	go s.services.RetrieveWikipediaNotification()
+	s.services.RetrieveWikipediaNotification(ctx)
+
+	s.logger.Info("chezanah")
 
 	return nil
 }

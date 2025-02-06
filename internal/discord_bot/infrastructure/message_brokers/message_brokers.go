@@ -1,5 +1,7 @@
 package message_brokers
 
+import "context"
+
 type MessageBrokers interface {
-	RetrieveMessage() chan string
+	RetrieveMessage(ctx context.Context) chan string
 }

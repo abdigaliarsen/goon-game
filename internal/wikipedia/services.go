@@ -29,7 +29,7 @@ type StreamReaderService interface {
 }
 
 type RunningStatusService interface {
-	Start()
-	Stop()
-	Restart()
+	StartService()
+	StopService()
+	RestartService()
 }

@@ -1,6 +1,9 @@
 package discord_bot
 
-import "github.com/bwmarrin/discordgo"
+import (
+	"context"
+	"github.com/bwmarrin/discordgo"
+)
 
 type DiscordService interface {
 	BotService
@@ -20,5 +23,5 @@ type CommandsService interface {
 }
 
 type WikipediaNotificationRetrieverService interface {
-	RetrieveWikipediaNotification()
+	RetrieveWikipediaNotification(ctx context.Context)
 }

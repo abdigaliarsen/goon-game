@@ -6,6 +6,13 @@ import (
 )
 
 func (s *discordService) Start() error {
+	if s.running {
+		s.logger.Warn("Bot is already running")
+		return nil
+	}
+
+	s.logger.Info("Starting Discord bot")
+
 	s.running = true
 
 	for _, chatId := range s.cfg.DiscordApiConfig.DiscordDefaultChatIds {
@@ -18,6 +25,8 @@ func (s *discordService) Start() error {
 }
 
 func (s *discordService) Stop() error {
+	s.logger.Info("Shutting down Discord bot")
+
 	s.running = false
 	return s.discord.Close()
 }

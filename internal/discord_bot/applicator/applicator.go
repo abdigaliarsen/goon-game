@@ -11,7 +11,6 @@ import (
 	"goon-game/internal/discord_bot/services"
 	"goon-game/internal/discord_bot/transport/wikipedia"
 	"goon-game/pkg/utils"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -47,27 +46,38 @@ func (a *Applicator) Run() {
 			services.New,
 			handlers.New,
 		),
-		fx.Invoke(
-			func(server *handlers.Server) {
-				shutdown := make(chan os.Signal, 1)
-				signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
-				go func() {
-					<-shutdown
-					a.logger.Info("Stop server")
-					ctx, cancel := context.WithTimeout(context.Background(), a.cfg.ServerConfig.ShutdownTimeout)
-					defer cancel()
-					if err := server.Shutdown(ctx); err != nil {
-						a.logger.Infof("Failure stop server: %v", err)
-					}
-				}()
-
-				a.logger.Infof("Start server on port: %s", a.cfg.ServerConfig.Port)
-				if err := server.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-					log.Fatalf("Failure start server: %v", err)
-				}
-			},
-		),
+		fx.Invoke(run),
 	)
 
 	app.Run()
+}
+
+type deps struct {
+	fx.In
+	Server *handlers.Server
+	Logger utils.Logger
+	Cfg    *config.Config
+}
+
+func run(in deps) {
+	ctx := context.Background()
+
+	shutdown := make(chan os.Signal, 1)
+	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		<-shutdown
+		in.Logger.Info("Stop server")
+		ctx, cancel := context.WithTimeout(ctx, in.Cfg.ServerConfig.ShutdownTimeout)
+		defer cancel()
+		if err := in.Server.Shutdown(ctx); err != nil {
+			in.Logger.Infof("Failure stop server: %v", err)
+		}
+	}()
+
+	in.Logger.Infof("Start server on port: %s", in.Cfg.ServerConfig.Port)
+	if err := in.Server.Start(ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		in.Logger.Fatalf("Failure start server: %v", err)
+	}
+
+	in.Logger.Info("chezanah")
 }

@@ -2,30 +2,36 @@ package message_brokers
 
 import (
 	"context"
+	"github.com/IBM/sarama"
 	"goon-game/pkg/utils"
+	"time"
 )
 
-func (k *kafkaBroker) RetrieveMessage() chan string {
-	messages := make(chan string)
+func (k *kafkaBroker) RetrieveMessage(ctx context.Context) chan string {
+	messages := make(chan string, 100)
+	k.logger.Info("Created message retrieving channel")
 
 	go func() {
 		for {
-			if k.consumerGroup == nil {
+			k.logger.Info("Waiting for messages")
+
+			if k.consumer == nil {
+				k.logger.Errorf("Consumer group is nil")
 				break
 			}
 
-			err := k.consumerGroup.Consume(context.TODO(), []string{utils.WikipediaTopic}, k.consumer)
+			partitionConsumer, err := k.consumer.ConsumePartition(utils.WikipediaTopic, 0, sarama.OffsetNewest)
 			if err != nil {
 				k.logger.Errorf("Error consuming messages: %v", err)
+				time.Sleep(2 * time.Second)
 				continue
 			}
 
-			for msg := range k.consumer.message {
-				messages <- msg
+			for message := range partitionConsumer.Messages() {
+				k.logger.Infof("Received message: %s", string(message.Value))
+				messages <- string(message.Value)
 			}
 		}
-
-		close(messages)
 	}()
 
 	return messages

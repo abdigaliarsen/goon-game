@@ -44,6 +44,6 @@ func New(in DiscordServiceIn) (discord_bot.DiscordService, error) {
 		discord:         discord,
 		kafka:           in.Kafka,
 		cache:           in.Cache,
-		running:         true,
+		running:         false,
 	}, nil
 }

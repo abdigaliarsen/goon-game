@@ -1,5 +1,10 @@
 PROTO_DIRS = pkg/proto/wikipedia
 PACKAGE_BASE_DIR = github.com/abdigaliarsen/goon-game/pkg/proto
+MKFILE_PATH = $(abspath $(lastword $(MAKEFILE_LIST)))
+PROJECT_ROOT = $(patsubst %/,%,$(dir $(MKFILE_PATH)))
+
+project-root:
+	echo $(PROJECT_ROOT)
 
 generate-structs:
 	@for DIR in $(PROTO_DIRS); do \
@@ -29,3 +34,11 @@ proto-plugin-install:
 	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 	go get google.golang.org/grpc
 	go get google.golang.org/protobuf
+
+hard-restart:
+	@if [ -n "$$(docker ps -aq)" ]; then docker stop $$(docker ps -aq); fi
+	@if [ -n "$$(docker ps -aq)" ]; then docker rm $$(docker ps -aq); fi
+	@if [ -n "$$(docker volume ls -q)" ]; then docker volume rm $$(docker volume ls -q); fi
+	@if [ -n "$$(docker network ls -q --filter type=custom)" ]; then docker network rm $$(docker network ls -q --filter type=custom); fi
+	@if [ -n "$$(docker images -aq)" ]; then docker rmi $$(docker images -aq); fi
+	docker compose -f $(PROJECT_ROOT)/docker/docker-compose.yml up -d

@@ -12,7 +12,7 @@ func (k *kafkaBroker) SendMessage(message, topic string) error {
 	if err != nil {
 		k.logger.Errorf("Failed to send message to Kafka topic %s: %v", topic, err)
 	} else {
-		k.logger.Infof("Message sent to Kafka topic %s", topic)
+		k.logger.Infof("Message \"%s\" sent to Kafka topic %s", message, topic)
 	}
 
 	return err

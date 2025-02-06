@@ -33,6 +33,6 @@ func New(in WikipediaServiceIn) wikipedia.WikipediaService {
 		logger:  in.Logger,
 		redis:   in.Redis,
 		kafka:   in.Kafka,
-		running: true,
+		running: false,
 	}
 }

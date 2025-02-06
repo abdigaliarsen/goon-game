@@ -52,6 +52,11 @@ func LoadConfig() (*Config, error) {
 	discordChatIds := utils.MustGetEnv[string]("DISCORD_DEFAULT_CHAT_IDS")
 
 	cfg := &Config{
+		RedisConfig: RedisConfig{
+			Addr:     utils.MustGetEnv[string]("REDIS_ADDR"),
+			Password: utils.MustGetEnv[string]("REDIS_PASSWORD"),
+			DB:       utils.MustGetEnv[int]("REDIS_DB"),
+		},
 		KafkaConfig: KafkaConfig{
 			KafkaHost:             utils.MustGetEnv[string]("KAFKA_HOST"),
 			KafkaWikipediaGroupID: utils.MustGetEnv[string]("KAFKA_WIKIPEDIA_GROUP_ID"),

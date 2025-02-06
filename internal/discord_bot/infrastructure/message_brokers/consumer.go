@@ -1,38 +1,29 @@
 package message_brokers
 
 import (
-	"encoding/json"
 	"github.com/IBM/sarama"
-	"log"
 )
 
-type Consumer struct {
+type ConsumerHandler struct {
 	message chan string
 }
 
-func NewConsumer() *Consumer {
-	return &Consumer{message: make(chan string)}
+func NewConsumerHandler() *ConsumerHandler {
+	return &ConsumerHandler{message: make(chan string, 100)}
 }
 
-func (c *Consumer) Setup(session sarama.ConsumerGroupSession) error {
+func (c *ConsumerHandler) Setup(session sarama.ConsumerGroupSession) error {
 	return nil
 }
 
-func (c *Consumer) Cleanup(session sarama.ConsumerGroupSession) error {
+func (c *ConsumerHandler) Cleanup(session sarama.ConsumerGroupSession) error {
 	close(c.message)
 	return nil
 }
 
-func (c *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
+func (c *ConsumerHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
 	for msg := range claim.Messages() {
-		var parsedMessage string
-		if err := json.Unmarshal(msg.Value, &parsedMessage); err != nil {
-			log.Printf("Error unmarshaling message: %v", err)
-			continue
-		}
-
-		c.message <- parsedMessage
-
+		c.message <- string(msg.Value)
 		session.MarkMessage(msg, "")
 	}
 

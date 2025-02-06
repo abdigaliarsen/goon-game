@@ -63,12 +63,12 @@ func (r *redisCache) Add(key, value string) error {
 		Member: value,
 	}).Result()
 	if err != nil {
-		return fmt.Errorf("failed to add to sorted set: %w", err)
+		return errors.New(fmt.Sprintf("failed to add to sorted set: %v", err))
 	}
 
 	_, err = r.rdb.ZRemRangeByRank(context.TODO(), key, 0, -4).Result()
 	if err != nil {
-		return fmt.Errorf("failed to trim sorted set: %w", err)
+		return errors.New(fmt.Sprintf("failed to trim sorted set: %v", err))
 	}
 
 	return nil
@@ -77,7 +77,7 @@ func (r *redisCache) Add(key, value string) error {
 func (r *redisCache) GetArr(key string) ([]string, []int64, error) {
 	valsWithTimestamps, err := r.rdb.ZRangeWithScores(context.TODO(), key, -3, -1).Result()
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to get sorted set: %w", err)
+		return nil, nil, errors.New(fmt.Sprintf("failed to get sorted set: %v", err))
 	}
 
 	var values []string

@@ -3,8 +3,8 @@ package handlers
 import (
 	"context"
 	"go.uber.org/fx"
-	"goon-game/internal/discord_bot/config"
 	"goon-game/internal/wikipedia"
+	"goon-game/internal/wikipedia/config"
 	desc "goon-game/pkg/proto/wikipedia"
 	"goon-game/pkg/utils"
 )
@@ -32,26 +32,30 @@ func New(in ServerIn) *Server {
 }
 
 func (s *Server) Start() error {
-	go func() {
-		for change := range s.wikipediaService.ReadStream() {
-			msg, err := s.wikipediaService.ConstructMessage(&change)
-			if err != nil {
-				s.logger.Errorf("Error constructing message: %v", err)
-				continue
-			}
+	s.wikipediaService.StartService()
 
-			if msg != "" {
-				if err := s.wikipediaService.SendNotification(msg); err != nil {
-					s.logger.Errorf("Error sending notification: %v", err)
-				}
-			}
+	for change := range s.wikipediaService.ReadStream() {
+		msg, err := s.wikipediaService.ConstructMessage(&change)
+		if err != nil {
+			s.logger.Errorf("Error constructing message: %v", err)
+			continue
 		}
-	}()
+
+		if msg != "" {
+			s.logger.Infof("Sending \"%s\" message", msg)
+
+			if err := s.wikipediaService.SendNotification(msg); err != nil {
+				s.logger.Errorf("Error sending notification: %v", err)
+			}
+		} else {
+			s.logger.Warn("No message was sent")
+		}
+	}
 
 	return nil
 }
 
 func (s *Server) Shutdown(ctx context.Context) error {
-	s.wikipediaService.Stop()
+	s.wikipediaService.StopService()
 	return nil
 }
