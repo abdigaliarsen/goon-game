@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-var re = regexp.MustCompile(`lang="([^"]+)"`)
+var re = regexp.MustCompile(`lang=\\"([^"]+)\\"`)
 
 func (w *wikipediaService) ReadStream() chan dto.RecentChange {
 	changesChannel := make(chan dto.RecentChange, 100)
@@ -115,8 +115,14 @@ func (w *wikipediaService) validLanguage(change dto.RecentChange) bool {
 		return true
 	}
 
-	matches := re.FindStringSubmatch(change.Data.ParsedComment)
-	return len(matches) > 1 && w.language == matches[1]
+	matches := re.FindAllStringSubmatch(change.Data.ParsedComment, -1)
+	for _, match := range matches {
+		if len(match) > 1 && w.language == match[1] {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (w *wikipediaService) doRecentChange() *http.Response {
