@@ -42,3 +42,9 @@ hard-restart:
 	@if [ -n "$$(docker network ls -q --filter type=custom)" ]; then docker network rm $$(docker network ls -q --filter type=custom); fi
 	@if [ -n "$$(docker images -aq)" ]; then docker rmi $$(docker images -aq); fi
 	docker compose -f $(PROJECT_ROOT)/docker/docker-compose.yml up -d
+
+run:
+	docker compose -f $(PROJECT_ROOT)/docker/docker-compose.yml up -d --build
+
+stop:
+	docker compose -f $(PROJECT_ROOT)/docker/docker-compose.yml down

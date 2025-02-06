@@ -42,8 +42,6 @@ func (s *Server) Start() error {
 		}
 
 		if msg != "" {
-			s.logger.Infof("Sending \"%s\" message", msg)
-
 			if err := s.wikipediaService.SendNotification(msg); err != nil {
 				s.logger.Errorf("Error sending notification: %v", err)
 			}

@@ -32,26 +32,47 @@ func (s *discordService) Stop() error {
 }
 
 func (s *discordService) InitHandlers() {
-	descriptors := s.getDescriptors()
+	handlers := s.getHandlers()
+	s.discord.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		if h, ok := handlers[i.ApplicationCommandData().Name]; ok {
+			h(s, i)
+		}
+	})
 
-	for _, desc := range descriptors {
-		s.discord.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-			if desc.Predicate(i.ApplicationCommandData().Name, i.Type) {
-				desc.Method(s, i)
-			}
-		})
+	commands := s.getCommands()
+	for _, v := range commands {
+		_, err := s.discord.ApplicationCommandCreate(s.discord.State.User.ID, "", v)
+		if err != nil {
+			s.logger.Fatalf("Error creating command: %+v", err)
+		}
 	}
 }
 
-func (s *discordService) getDescriptors() []utils.MethodDescriptor {
-	return []utils.MethodDescriptor{
+func (s *discordService) getHandlers() map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	return map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
+		"setlang": s.SetLanguage,
+		"recent":  s.GetLanguageUpdates,
+	}
+}
+
+func (s *discordService) getCommands() []*discordgo.ApplicationCommand {
+	return []*discordgo.ApplicationCommand{
 		{
-			Predicate: utils.CommandEqual("!setLang", discordgo.InteractionApplicationCommand),
-			Method:    s.SetLanguage,
+			Name:        "setlang",
+			Description: "Set the Wikipedia language",
+			Type:        discordgo.ChatApplicationCommand,
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Name:        "language",
+					Description: "Language to filter recent changes",
+					Type:        discordgo.ApplicationCommandOptionString,
+				},
+			},
 		},
 		{
-			Predicate: utils.CommandEqual("!recent", discordgo.InteractionApplicationCommand),
-			Method:    s.GetLanguageUpdates,
+			Name:        "recent",
+			Description: "Get recent language updates",
+			Type:        discordgo.ChatApplicationCommand,
 		},
 	}
 }

@@ -28,7 +28,6 @@ func (k *kafkaBroker) RetrieveMessage(ctx context.Context) chan string {
 			}
 
 			for message := range partitionConsumer.Messages() {
-				k.logger.Infof("Received message: %s", string(message.Value))
 				messages <- string(message.Value)
 			}
 		}

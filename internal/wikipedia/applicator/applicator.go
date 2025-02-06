@@ -3,13 +3,18 @@ package applicator
 import (
 	"context"
 	"errors"
+	"fmt"
 	"go.uber.org/fx"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 	"goon-game/internal/wikipedia/config"
 	"goon-game/internal/wikipedia/handlers"
 	"goon-game/internal/wikipedia/infrastructure/cache"
 	"goon-game/internal/wikipedia/infrastructure/message_brokers"
 	"goon-game/internal/wikipedia/services"
+	desc "goon-game/pkg/proto/wikipedia"
 	"goon-game/pkg/utils"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -71,7 +76,24 @@ func run(in deps) {
 	}()
 
 	in.Logger.Infof("Start server on port: %s", in.Cfg.ServerConfig.Port)
-	if err := in.Server.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+	s := grpc.NewServer()
+	reflection.Register(s)
+
+	desc.RegisterWikipediaServiceServer(s, in.Server)
+
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", in.Cfg.ServerConfig.Port))
+	if err != nil {
+		in.Logger.Fatalf("failed to listen: %v", err)
+		return
+	}
+
+	go func() {
+		if err = in.Server.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			in.Logger.Fatalf("Failure start server: %v", err)
+		}
+	}()
+
+	if err = s.Serve(lis); err != nil {
 		in.Logger.Fatalf("Failure start server: %v", err)
 	}
 }

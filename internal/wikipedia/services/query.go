@@ -12,11 +12,14 @@ func (w *wikipediaService) SetLanguage(language string) error {
 		return err
 	}
 
+	w.logger.Infof("Set language: %s", language)
+
 	w.language = language
 	return w.redis.SetS(utils.LanguageKey, language)
 }
 
 func (w *wikipediaService) GetLanguage() (string, error) {
+	w.logger.Infof("Get language: %s", w.language)
 	return w.redis.GetS(utils.LanguageKey)
 }
 
@@ -37,6 +40,8 @@ func (w *wikipediaService) GetLanguageUpdates() ([]*dto.LanguageUpdate, error) {
 			UpdatedAt: time.Unix(updatedAt[i], 0),
 		})
 	}
+
+	w.logger.Infof("Get language updates: %v", languageUpdates)
 
 	return languageUpdates, nil
 }

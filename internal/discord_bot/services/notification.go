@@ -16,8 +16,6 @@ func (d *discordService) RetrieveWikipediaNotification(ctx context.Context) {
 			return
 		}
 
-		d.logger.Info("Retrieved new kafka message: %s", message)
-
 		discordChannelIds, _, err := d.cache.GetArr(utils.DiscordChannelIdsKey)
 		if err != nil {
 			d.logger.Errorf("Error getting discord channel ids: %v", err)
@@ -25,7 +23,6 @@ func (d *discordService) RetrieveWikipediaNotification(ctx context.Context) {
 		}
 
 		for _, channelId := range discordChannelIds {
-			d.logger.Infof("Sending \"%s\" message to \"%s\" channel", message, channelId)
 			_, err = d.discord.ChannelMessageSend(channelId, message)
 			if err != nil {
 				d.logger.Errorf("Error sending message to discord channel: %v", err)

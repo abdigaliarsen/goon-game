@@ -30,11 +30,11 @@ func New(in ServerIn) *Server {
 }
 
 func (s *Server) Start(ctx context.Context) error {
-	s.services.InitHandlers()
-
 	if err := s.services.Start(); err != nil {
 		return err
 	}
+
+	s.services.InitHandlers()
 
 	s.services.RetrieveWikipediaNotification(ctx)
 
