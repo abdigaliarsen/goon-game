@@ -15,18 +15,38 @@ func (s *Server) SetLanguage(ctx context.Context, req *desc.SetLanguageRequest) 
 	return &desc.EmptyResponse{}, nil
 }
 
-func (s *Server) GetLanguageUpdates(ctx context.Context, req *desc.EmptyRequest) (*desc.GetLanguageUpdatesResponse, error) {
+func (s *Server) GetLanguageUpdates(ctx context.Context, _ *desc.EmptyRequest) (*desc.GetLanguageUpdatesResponse, error) {
 	languageUpdates, err := s.wikipediaService.GetLanguageUpdates()
 	if err != nil {
 		return nil, err
 	}
 
 	resp := &desc.GetLanguageUpdatesResponse{
-		Updates: make([]*desc.GetLanguageUpdatesResponse_Data, 0, len(languageUpdates)),
+		Updates: make([]*desc.LanguageUpdate, 0, len(languageUpdates)),
 	}
 
 	for _, update := range languageUpdates {
-		resp.Updates = append(resp.Updates, &desc.GetLanguageUpdatesResponse_Data{
+		resp.Updates = append(resp.Updates, &desc.LanguageUpdate{
+			Language:  update.Language,
+			UpdatedAt: timestamppb.New(update.UpdatedAt),
+		})
+	}
+
+	return resp, nil
+}
+
+func (s *Server) GetStats(ctx context.Context, req *desc.GetStatsRequest) (*desc.GetStatsResponse, error) {
+	languageUpdates, err := s.wikipediaService.GetLanguageUpdatesByDate(req.GetDatetime().AsTime())
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &desc.GetStatsResponse{
+		Updates: make([]*desc.LanguageUpdate, 0, len(languageUpdates)),
+	}
+
+	for _, update := range languageUpdates {
+		resp.Updates = append(resp.Updates, &desc.LanguageUpdate{
 			Language:  update.Language,
 			UpdatedAt: timestamppb.New(update.UpdatedAt),
 		})

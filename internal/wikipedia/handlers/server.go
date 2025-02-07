@@ -31,26 +31,12 @@ func New(in ServerIn) *Server {
 	}
 }
 
-func (s *Server) Start() error {
+func (s *Server) Start() {
 	s.wikipediaService.StartService()
+}
 
-	for change := range s.wikipediaService.ReadStream() {
-		msg, err := s.wikipediaService.ConstructMessage(&change)
-		if err != nil {
-			s.logger.Errorf("Error constructing message: %v", err)
-			continue
-		}
-
-		if msg != "" {
-			if err := s.wikipediaService.SendNotification(msg); err != nil {
-				s.logger.Errorf("Error sending notification: %v", err)
-			}
-		} else {
-			s.logger.Warn("No message was sent")
-		}
-	}
-
-	return nil
+func (s *Server) Run() {
+	go s.wikipediaService.RunService()
 }
 
 func (s *Server) Shutdown(ctx context.Context) error {

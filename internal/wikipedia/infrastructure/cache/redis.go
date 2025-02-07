@@ -7,6 +7,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/fx"
 	"goon-game/internal/wikipedia/config"
+	utils2 "goon-game/internal/wikipedia/utils"
 	"goon-game/pkg/utils"
 	"time"
 )
@@ -56,7 +57,7 @@ func (r *redisCache) GetS(key string) (string, error) {
 }
 
 func (r *redisCache) AddS(key, value string) error {
-	timestamp := time.Now().Unix()
+	timestamp := time.Now().UTC().Unix()
 
 	_, err := r.rdb.ZAdd(context.TODO(), key, redis.Z{
 		Score:  float64(timestamp),
@@ -66,7 +67,7 @@ func (r *redisCache) AddS(key, value string) error {
 		return fmt.Errorf("failed to add to sorted set: %w", err)
 	}
 
-	_, err = r.rdb.ZRemRangeByRank(context.TODO(), key, 0, -4).Result()
+	_, err = r.rdb.ZRemRangeByRank(context.TODO(), key, 0, -utils2.LanguageUpdatesSize).Result()
 	if err != nil {
 		return fmt.Errorf("failed to trim sorted set: %w", err)
 	}
@@ -86,6 +87,30 @@ func (r *redisCache) GetList(key string) ([]string, []int64, error) {
 	for _, z := range valsWithTimestamps {
 		values = append(values, z.Member.(string))
 		timestamps = append(timestamps, int64(z.Score))
+	}
+
+	return values, timestamps, nil
+}
+
+func (r *redisCache) GetZRangeByDate(date time.Time, key string) ([]string, []int64, error) {
+	from := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC)
+	to := time.Date(date.Year(), date.Month(), date.Day(), 23, 59, 59, 0, time.UTC)
+
+	entries, err := r.rdb.ZRangeByScoreWithScores(context.TODO(), key, &redis.ZRangeBy{
+		Min: fmt.Sprintf("%d", from.Unix()),
+		Max: fmt.Sprintf("%d", to.Unix()),
+	}).Result()
+
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to get sorted set: %w", err)
+	}
+
+	values := make([]string, 0, len(entries))
+	timestamps := make([]int64, 0, len(entries))
+
+	for _, entry := range entries {
+		values = append(values, entry.Member.(string))
+		timestamps = append(timestamps, int64(entry.Score))
 	}
 
 	return values, timestamps, nil

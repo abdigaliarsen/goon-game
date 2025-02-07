@@ -20,8 +20,10 @@ func (w *wikipediaService) StopService() {
 	w.running = false
 }
 
-func (w *wikipediaService) RestartService() {
+func (w *wikipediaService) HardRestartService() {
 	w.StopService()
 	time.Sleep(500 * time.Millisecond)
 	w.StartService()
+
+	go w.RunService()
 }

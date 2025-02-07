@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	WikipediaService_SetLanguage_FullMethodName        = "/auth.WikipediaService/SetLanguage"
 	WikipediaService_GetLanguageUpdates_FullMethodName = "/auth.WikipediaService/GetLanguageUpdates"
+	WikipediaService_GetStats_FullMethodName           = "/auth.WikipediaService/GetStats"
 )
 
 // WikipediaServiceClient is the client API for WikipediaService service.
@@ -29,6 +30,7 @@ const (
 type WikipediaServiceClient interface {
 	SetLanguage(ctx context.Context, in *SetLanguageRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
 	GetLanguageUpdates(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*GetLanguageUpdatesResponse, error)
+	GetStats(ctx context.Context, in *GetStatsRequest, opts ...grpc.CallOption) (*GetStatsResponse, error)
 }
 
 type wikipediaServiceClient struct {
@@ -59,12 +61,23 @@ func (c *wikipediaServiceClient) GetLanguageUpdates(ctx context.Context, in *Emp
 	return out, nil
 }
 
+func (c *wikipediaServiceClient) GetStats(ctx context.Context, in *GetStatsRequest, opts ...grpc.CallOption) (*GetStatsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetStatsResponse)
+	err := c.cc.Invoke(ctx, WikipediaService_GetStats_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WikipediaServiceServer is the server API for WikipediaService service.
 // All implementations must embed UnimplementedWikipediaServiceServer
 // for forward compatibility.
 type WikipediaServiceServer interface {
 	SetLanguage(context.Context, *SetLanguageRequest) (*EmptyResponse, error)
 	GetLanguageUpdates(context.Context, *EmptyRequest) (*GetLanguageUpdatesResponse, error)
+	GetStats(context.Context, *GetStatsRequest) (*GetStatsResponse, error)
 	mustEmbedUnimplementedWikipediaServiceServer()
 }
 
@@ -80,6 +93,9 @@ func (UnimplementedWikipediaServiceServer) SetLanguage(context.Context, *SetLang
 }
 func (UnimplementedWikipediaServiceServer) GetLanguageUpdates(context.Context, *EmptyRequest) (*GetLanguageUpdatesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLanguageUpdates not implemented")
+}
+func (UnimplementedWikipediaServiceServer) GetStats(context.Context, *GetStatsRequest) (*GetStatsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStats not implemented")
 }
 func (UnimplementedWikipediaServiceServer) mustEmbedUnimplementedWikipediaServiceServer() {}
 func (UnimplementedWikipediaServiceServer) testEmbeddedByValue()                          {}
@@ -138,6 +154,24 @@ func _WikipediaService_GetLanguageUpdates_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _WikipediaService_GetStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetStatsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WikipediaServiceServer).GetStats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WikipediaService_GetStats_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WikipediaServiceServer).GetStats(ctx, req.(*GetStatsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // WikipediaService_ServiceDesc is the grpc.ServiceDesc for WikipediaService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -152,6 +186,10 @@ var WikipediaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetLanguageUpdates",
 			Handler:    _WikipediaService_GetLanguageUpdates_Handler,
+		},
+		{
+			MethodName: "GetStats",
+			Handler:    _WikipediaService_GetStats_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -52,6 +52,7 @@ func (s *discordService) getHandlers() map[string]func(s *discordgo.Session, i *
 	return map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
 		"setlang": s.SetLanguage,
 		"recent":  s.GetLanguageUpdates,
+		"stats":   s.GetStats,
 	}
 }
 
@@ -73,6 +74,10 @@ func (s *discordService) getCommands() []*discordgo.ApplicationCommand {
 			Name:        "recent",
 			Description: "Get recent language updates",
 			Type:        discordgo.ChatApplicationCommand,
+		},
+		{
+			Name:        "stats",
+			Description: "Track the number of changes per day for each language.",
 		},
 	}
 }

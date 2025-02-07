@@ -2,7 +2,6 @@ package applicator
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"go.uber.org/fx"
 	"google.golang.org/grpc"
@@ -15,7 +14,6 @@ import (
 	desc "goon-game/pkg/proto/wikipedia"
 	"goon-game/pkg/utils"
 	"net"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -87,11 +85,8 @@ func run(in deps) {
 		return
 	}
 
-	go func() {
-		if err = in.Server.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			in.Logger.Fatalf("Failure start server: %v", err)
-		}
-	}()
+	in.Server.Start()
+	in.Server.Run()
 
 	if err = s.Serve(lis); err != nil {
 		in.Logger.Fatalf("Failure start server: %v", err)

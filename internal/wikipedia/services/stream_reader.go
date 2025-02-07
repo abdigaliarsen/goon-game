@@ -4,13 +4,11 @@ import (
 	"bufio"
 	"encoding/json"
 	"goon-game/internal/wikipedia/dto"
+	"goon-game/internal/wikipedia/utils"
 	"net/http"
-	"regexp"
 	"strings"
 	"time"
 )
-
-var re = regexp.MustCompile(`lang=\\"([^"]+)\\"`)
 
 func (w *wikipediaService) ReadStream() chan dto.RecentChange {
 	changesChannel := make(chan dto.RecentChange, 100)
@@ -24,10 +22,12 @@ func (w *wikipediaService) ReadStream() chan dto.RecentChange {
 				continue
 			}
 
-			w.processStream(resp, changesChannel)
+			go w.processStream(resp, changesChannel)
 
-			time.Sleep(500 * time.Millisecond)
+			time.Sleep(50 * time.Millisecond)
 		}
+
+		close(changesChannel)
 	}()
 
 	return changesChannel
@@ -115,14 +115,11 @@ func (w *wikipediaService) validLanguage(change dto.RecentChange) bool {
 		return true
 	}
 
-	matches := re.FindAllStringSubmatch(change.Data.ParsedComment, -1)
-	for _, match := range matches {
-		if len(match) > 1 && w.language == match[1] {
-			return true
-		}
+	if strings.HasPrefix(change.Data.TitleURL, utils.GetWikipediaDomainByLanguage(w.language)) {
+		w.logger.Info(change.Data.TitleURL)
 	}
 
-	return false
+	return strings.HasPrefix(change.Data.TitleURL, utils.GetWikipediaDomainByLanguage(w.language))
 }
 
 func (w *wikipediaService) doRecentChange() *http.Response {

@@ -9,21 +9,30 @@ import "google/protobuf/timestamp.proto";
 service WikipediaService {
   rpc SetLanguage(SetLanguageRequest) returns(EmptyResponse);
   rpc GetLanguageUpdates(EmptyRequest) returns(GetLanguageUpdatesResponse);
+  rpc GetStats(GetStatsRequest) returns(GetStatsResponse);
 }
 
 message EmptyRequest {}
 
 message EmptyResponse {}
 
+message LanguageUpdate {
+  google.protobuf.Timestamp updated_at = 1;
+  string language = 2;
+}
+
 message SetLanguageRequest {
   string language = 1;
 }
 
 message GetLanguageUpdatesResponse {
-  repeated Data updates = 1;
+  repeated LanguageUpdate updates = 1;
+}
 
-  message Data {
-    google.protobuf.Timestamp updated_at = 1;
-    string language = 2;
-  }
+message GetStatsRequest {
+  google.protobuf.Timestamp datetime = 1;
+}
+
+message GetStatsResponse {
+  repeated LanguageUpdate updates = 1;
 }

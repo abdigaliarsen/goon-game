@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"goon-game/internal/wikipedia/dto"
+	"time"
 )
 
 func (w *wikipediaService) ConstructMessage(recentChange *dto.RecentChange) (string, error) {
@@ -12,11 +13,11 @@ func (w *wikipediaService) ConstructMessage(recentChange *dto.RecentChange) (str
 	}
 
 	msg := fmt.Sprintf(
-		"(%s, %s, %s, %d)",
+		"(%s, %s, %s, %s)",
 		recentChange.Data.Title,
 		recentChange.Data.TitleURL,
 		recentChange.Data.User,
-		recentChange.Data.Timestamp,
+		time.Unix(recentChange.Data.Timestamp, 0).UTC().Format(time.RFC3339),
 	)
 
 	return msg, nil

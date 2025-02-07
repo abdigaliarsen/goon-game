@@ -27,7 +27,7 @@ type RecentChange struct {
 		Title     string `json:"title"`
 		TitleURL  string `json:"title_url"`
 		Comment   string `json:"comment"`
-		Timestamp uint64 `json:"timestamp"`
+		Timestamp int64  `json:"timestamp"`
 		User      string `json:"user"`
 		Bot       bool   `json:"bot"`
 		NotifyURL string `json:"notify_url"`

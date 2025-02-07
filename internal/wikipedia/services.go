@@ -1,6 +1,9 @@
 package wikipedia
 
-import "goon-game/internal/wikipedia/dto"
+import (
+	"goon-game/internal/wikipedia/dto"
+	"time"
+)
 
 type WikipediaService interface {
 	QueryService
@@ -14,6 +17,7 @@ type QueryService interface {
 	SetLanguage(language string) error
 	GetLanguage() (string, error)
 	GetLanguageUpdates() ([]*dto.LanguageUpdate, error)
+	GetLanguageUpdatesByDate(date time.Time) ([]*dto.LanguageUpdate, error)
 }
 
 type NotificationService interface {
@@ -31,5 +35,6 @@ type StreamReaderService interface {
 type RunningStatusService interface {
 	StartService()
 	StopService()
-	RestartService()
+	HardRestartService()
+	RunService()
 }
