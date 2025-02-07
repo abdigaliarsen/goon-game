@@ -43,8 +43,16 @@ make run
 
 - **Redis**: Used for caching the history of language changes and storing the current language parameter. Redis supports up to 10,000,000 entries with minimal memory usage (~10MB of RAM), ensuring quick data retrieval.
 
----
-
-## 4. Example Output
-
 ![Screenshot from 2025-02-07 07-11-45](https://github.com/user-attachments/assets/f2b7dcee-923a-454b-91ee-d2ffc24c0b99)
+
+## 4. Further Scaling
+
+- **Multithreaded Operations**: Implementing a dedicated `TaskService` to manage complex operations using Go channels and goroutines will enhance concurrency and improve performance for high-load scenarios.
+
+- **Kibana Integration for Logging**: Since Kafka is already integrated, incorporating the ELK (Elasticsearch, Logstash, Kibana) stack will provide robust monitoring and centralized logging, enabling better visualization and analysis of logs.
+
+- **Horizontal Scaling**: Deploy multiple instances of the microservices and use container orchestration tools like Kubernetes or Docker Swarm to manage scaling automatically based on traffic and resource utilization.
+
+- **Database Optimization**: For handling larger datasets, consider sharding or partitioning in Redis and optimize Kafka topic partitions for parallel processing.
+
+- **CI/CD Pipeline Integration**: Automate testing, building, and deployment processes using CI/CD tools like GitHub Actions, Jenkins, or GitLab CI to ensure rapid and reliable delivery of updates.
