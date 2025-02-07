@@ -41,6 +41,8 @@ func (s *discordService) InitHandlers() {
 
 	commands := s.getCommands()
 	for _, v := range commands {
+		s.logger.Infof("Adding '%s' command", v.Name)
+
 		_, err := s.discord.ApplicationCommandCreate(s.discord.State.User.ID, "", v)
 		if err != nil {
 			s.logger.Fatalf("Error creating command: %+v", err)
@@ -78,6 +80,13 @@ func (s *discordService) getCommands() []*discordgo.ApplicationCommand {
 		{
 			Name:        "stats",
 			Description: "Track the number of changes per day for each language.",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Name:        "date",
+					Description: "Show number of changes on specified date [yyyy-mm-dd]",
+					Type:        discordgo.ApplicationCommandOptionString,
+				},
+			},
 		},
 	}
 }
