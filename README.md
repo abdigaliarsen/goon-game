@@ -44,6 +44,7 @@ make run
 - **Redis**: Used for caching the history of language changes and storing the current language parameter. Redis supports up to 10,000,000 entries with minimal memory usage (~10MB of RAM), ensuring quick data retrieval.
 
 ![Screenshot from 2025-02-07 07-11-45](https://github.com/user-attachments/assets/f2b7dcee-923a-454b-91ee-d2ffc24c0b99)
+(of course everything is containerized, i'm just too lazy to fix this diagram)
 
 ## 4. Further Scaling
 
